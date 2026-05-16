@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: logistics-risk-api
+    runtime: docker
+    plan: starter
+    rootDir: mlops
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: MLFLOW_TRACKING_URI
+        sync: false
+      - key: MLFLOW_TRACKING_USERNAME
+        sync: false
+      - key: MLFLOW_TRACKING_PASSWORD
+        sync: false
+      - key: DVC_REMOTE_URL
+        sync: false
+    autoDeploy: true

@@ -1,0 +1,36 @@
+name: Drift Monitor & Auto-Retrain
+
+on:
+  schedule:
+    - cron: "0 */6 * * *" # every 6 hours
+  workflow_dispatch:
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    outputs:
+      drift: ${{ steps.check.outputs.drift }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -r mlops/requirements.txt
+      - name: Pull artifacts
+        working-directory: mlops
+        run: dvc pull -r origin || true
+      - id: check
+        working-directory: mlops
+        run: |
+          if python -m src.monitor; then
+            echo "drift=false" >> $GITHUB_OUTPUT
+          else
+            echo "drift=true" >> $GITHUB_OUTPUT
+          fi
+      - uses: actions/upload-artifact@v4
+        with: { name: drift_report, path: mlops/artifacts/drift_report.json }
+
+  retrain:
+    needs: monitor
+    if: needs.monitor.outputs.drift == 'true'
+    uses: ./.github/workflows/train.yml
+    secrets: inherit

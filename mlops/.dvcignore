@@ -1,0 +1,8 @@
+# DVC will ignore these patterns when computing hashes
+.git/
+.github/
+node_modules/
+__pycache__/
+*.pyc
+mlruns/
+.pytest_cache/

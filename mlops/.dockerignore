@@ -1,0 +1,13 @@
+.git
+.github
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+.dvc/cache
+data/raw/*
+data/processed/*
+data/features/*
+mlruns/
+.env
+node_modules

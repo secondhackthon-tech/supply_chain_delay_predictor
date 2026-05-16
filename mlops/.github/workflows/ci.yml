@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mlops
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11", cache: "pip" }
+      - name: Install
+        run: pip install -r requirements.txt
+      - name: Lint dvc.yaml + params.yaml
+        run: |
+          python -c "import yaml; yaml.safe_load(open('dvc.yaml'))"
+          python -c "import yaml; yaml.safe_load(open('params.yaml'))"
+      - name: Smoke-run pipeline (synthetic data, no DVC remote)
+        run: |
+          python -m src.ingest
+          python -m src.preprocess
+          python -m src.features
+          python -m src.train
+          python -m src.evaluate
+      - name: Tests
+        run: pytest -q

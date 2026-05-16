@@ -1,0 +1,44 @@
+data:
+  raw_path: data/raw/customer_analytics.csv
+  processed_path: data/processed/clean.csv
+  features_path: data/features/features.parquet
+  target: Reached.on.Time_Y.N
+  test_size: 0.2
+  random_state: 42
+
+preprocess:
+  drop_columns: [ID]
+  categorical: [Warehouse_block, Mode_of_Shipment, Product_importance, Gender]
+  numeric:
+    [
+      Customer_care_calls,
+      Customer_rating,
+      Cost_of_the_Product,
+      Prior_purchases,
+      Discount_offered,
+      Weight_in_gms,
+    ]
+
+train:
+  model: xgboost
+  params:
+    n_estimators: 400
+    max_depth: 6
+    learning_rate: 0.08
+    subsample: 0.9
+    colsample_bytree: 0.9
+    eval_metric: logloss
+    tree_method: hist
+
+evaluate:
+  threshold: 0.5
+
+mlflow:
+  experiment: logistics_risk
+  tracking_uri: https://dagshub.com/<USER>/<REPO>.mlflow
+  registered_model: logistics_risk_model
+
+monitoring:
+  drift_threshold: 0.2 # PSI threshold per feature
+  confidence_floor: 0.55 # alert if mean confidence drops below
+  alert_webhook: ""

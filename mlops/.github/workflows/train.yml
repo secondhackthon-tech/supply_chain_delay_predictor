@@ -1,0 +1,40 @@
+name: Train Pipeline
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "mlops/src/**"
+      - "mlops/params.yaml"
+      - "mlops/dvc.yaml"
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    env:
+      MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+      MLFLOW_TRACKING_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
+      MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install -r mlops/requirements.txt
+      - name: Configure DVC remote (DagsHub S3)
+        working-directory: mlops
+        run: |
+          dvc remote modify origin --local access_key_id  ${{ secrets.DAGSHUB_USERNAME }}
+          dvc remote modify origin --local secret_access_key ${{ secrets.DAGSHUB_TOKEN }}
+      - name: Pull data
+        working-directory: mlops
+        run: dvc pull -r origin || true
+      - name: Reproduce pipeline
+        working-directory: mlops
+        run: dvc repro
+      - name: Push artifacts
+        working-directory: mlops
+        run: dvc push -r origin
+      - uses: actions/upload-artifact@v4
+        with:
+          name: metrics
+          path: mlops/artifacts/

@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.env
+*.egg-info/
+
+# DVC managed
+/data/raw/*
+/data/processed/*
+/data/features/*
+!/data/.gitkeep
+/artifacts/models/*
+/artifacts/*.png
+/artifacts/*.json
+/artifacts/*.jsonl
+/artifacts/rollback_version.txt
+!/artifacts/.gitkeep
+.dvc/cache
+.dvc/tmp
+
+# MLflow
+mlruns/
+
+# Test
+.pytest_cache/
+.coverage
+htmlcov/
